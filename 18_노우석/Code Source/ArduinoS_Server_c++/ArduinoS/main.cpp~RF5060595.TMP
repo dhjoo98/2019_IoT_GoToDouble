@@ -1,0 +1,144 @@
+#include <stdio.h>
+#include <iostream>
+#include <string>
+#include <stdlib.h>
+#include <windows.h>
+#include "serialcomm.h"
+
+using namespace std;
+
+#define MAX_TOK 4
+const int platton_num = 3;
+
+struct State {
+	int total_num;
+	int except_num;
+	int current_num;
+};
+
+struct Platton {
+	int squad_num;
+	State *s;
+};
+
+string* strSplit(string strOrigin, string strTok);
+
+int main()
+{
+	char buffer;
+	BYTE buf = 0, *tbuf; tbuf = new BYTE[30]();
+	string text;
+	int total_total, total_except, total_current;
+	bool check_read = false;
+	CSerialComm serialComm; //SerialComm 객체 생성
+
+	//Init platton info
+	Platton pls[platton_num];
+	pls[0].squad_num = 3;
+	pls[0].s = new State[pls[0].squad_num];
+	pls[1].squad_num = 2;
+	pls[1].s = new State[pls[1].squad_num];
+	pls[2].squad_num = 1;
+	pls[2].s = new State[pls[2].squad_num];
+
+	for (int i = 0; i < platton_num; i++) {
+		for (int j = 0; j < pls[i].squad_num; j++) {
+			pls[i].s[j].total_num = 0;
+			pls[i].s[j].except_num = 0;
+			pls[i].s[j].current_num = 0;
+		}
+	}
+	total_total = 0;
+	total_except = 0;
+	total_current = 0;
+
+	if (!serialComm.connect("COM3")) //COM25번의 포트를 오픈한다. 실패할 경우 -1을 반환한다.
+	{
+		cout << "connect faliled" << endl;
+		return -1;
+	}
+	else
+		cout << "connect successed" << endl;
+
+	
+	while (1) {
+		check_read = false;
+		system("cls");
+		cout << "   |    총 인원    |    열외    |    현재원" << endl;
+		cout << "계 |      " << total_total << "        |      " << total_except << "     |      " << total_current <<endl;
+		for (int i = 0; i < platton_num; i++) {
+			for (int j = 0; j < pls[i].squad_num; j++) {
+				cout << (i + 1) << "P" << (j + 1) << "S      " << pls[i].s[j].total_num << "               " << pls[i].s[j].except_num << "            " << pls[i].s[j].current_num << endl;
+			}
+		}
+
+		if (serialComm.serial.ReadByte(tbuf, (UINT)10)) {
+			cout << tbuf << endl;
+			check_read = true;
+			Sleep(2000);
+		}
+		
+		
+		//update text분석하고 토큰화 후 값 변경
+		if (check_read) {
+			
+			string *tokens = strSplit(text, "/");
+			text = "";
+			int plat_n = 0, squad_n = 0;
+			plat_n = atoi(&tokens[0].at(0));
+			squad_n = atoi(&tokens[0].at(1));
+
+			pls[plat_n].s[plat_n].total_num = atoi(tokens[1].c_str());
+			pls[plat_n].s[plat_n].except_num = atoi(tokens[2].c_str());
+			pls[plat_n].s[plat_n].current_num = atoi(tokens[3].c_str());
+
+			total_total = 0;
+			total_except = 0;
+			total_current = 0;
+			for (int i = 0; i < platton_num; i++) {
+				for (int j = 0; j < pls[i].squad_num; j++) {
+					total_total += pls[i].s[j].total_num;
+					total_except += pls[i].s[j].except_num;
+					total_current += pls[i].s[j].current_num;
+				}
+			}
+			check_read = false;
+		}
+		
+	}
+
+
+	serialComm.disconnect(); //작업이 끝나면 포트를 닫는다
+
+	cout << "end connect" << endl;
+	return 0;
+
+}
+
+
+string* strSplit(string strOrigin, string strTok)
+{
+	int cutAt;  // 자르는 위치
+	int index = 0;  // 문자열 인덱스
+	string* strResult = new string[MAX_TOK]; // 결과 return 변수
+
+											// strTok을 찾을 때까지 반복
+		while ((cutAt = strOrigin.find_first_of(strTok)) != strOrigin.npos)
+		{
+			if (cutAt > 0)  // 자르는 위치가 0보다 크면
+			{
+				// 결과 배열에 추가
+				strResult[index++] = strOrigin.substr(0, cutAt);
+			}
+			// 원본은 자른 부분을 제외한 나머지
+			strOrigin = strOrigin.substr(cutAt + 1);
+		}
+
+	if (strOrigin.length() > 0) // 원본이 아직 남았으면
+	{
+		// 나머지를 결과 배열에 추가
+		strResult[index++] = strOrigin.substr(0, cutAt);
+	}
+
+	return strResult;
+}
