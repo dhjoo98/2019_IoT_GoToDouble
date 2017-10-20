@@ -76,7 +76,7 @@ while 1 :
     f.close()
 
     
-    if permission == 'p' and (((now.hour <= 23 and now.hour >= 23 ) and dataList[5] == 's\n') or dataList[5] == 'm\n'):
+    if permission == 'p' and (((now.hour <= 6 and now.hour >= 23 ) and dataList[5] == 's\n') or dataList[5] == 'm\n'):
         print("It's matched")
         try:
             b_sock.send("p")
