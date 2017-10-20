@@ -1,0 +1,421 @@
+
+// 핀 설정
+#define RST 6
+#define DAT 5
+#define CLK 4
+#define pot A0
+#define cds A1
+#define IR_Pin 9
+#define buzzer 3
+#define btn 2
+
+// 리모컨 신호 설정
+#define IR_0 3238126971
+#define IR_1 2534850111
+#define IR_2 1033561079
+#define IR_3 1635910171
+#define IR_4 2351064443
+#define IR_5 1217346747
+#define IR_6 71952287
+#define IR_7 851901943
+
+#define IR_8 465573243
+#define IR_9 1053031451
+#define IR_10 2538093563
+#define IR_set 3855596927
+#define IR_prev 1386468383
+#define IR_next 3622325019
+#define IR_ok 553536955
+
+
+
+// 헤더 설정
+#include <Wire.h>
+#include <Stepper.h>
+#include <DS1302.h>
+#include <LiquidCrystal_I2C.h>
+#include <IRremote.h>
+
+// 스텝모터 설정
+const int stepsPerRevolution = 2048;
+
+// 잡것들
+Stepper myStepper(stepsPerRevolution, 13, 11, 12, 10);
+DS1302 rtc(RST, DAT, CLK);
+LiquidCrystal_I2C lcd(0x3F, 16, 2);
+IRrecv irrecv(IR_Pin);
+decode_results results;
+
+// 전역변수 선언
+int val;
+int spd;
+int level = 0;
+int max = 1023;
+int percent;
+int mode = 0;
+int custom[2][2][2];
+
+
+// 높이제어 함수
+
+void Adjust_IR(int set, int *level, int max)
+{
+  while (map(*level, 0, max, 0, 100) != set)
+  {
+    myStepper.setSpeed(15);
+    lcd.setCursor(0, 0);
+    lcd.print("Adjust to ");
+    lcd.print(set);
+    lcd.print("%...        ");
+    if (map(*level, 0, max, 0, 100) < set)
+    {
+      myStepper.step(stepsPerRevolution / 180);
+      *level += stepsPerRevolution / 180;
+    }
+    else if (map(*level, 0, max, 0, 100) > set)
+    {
+      myStepper.step(-stepsPerRevolution / 180);
+      *level -= stepsPerRevolution / 180;
+    }
+    lcd.setCursor(0, 1);
+    lcd.print("Level : ");
+    lcd.print(map(*level, 0, max, 0, 100));
+    lcd.print("%        ");
+  }
+}
+
+// 설정메뉴 (만들다가 중단)
+// while (1)으로 변경하면 동작합니다.
+
+void settings()
+{
+  int set_mode = 1;
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  //lcd.print("  Setting Mode   ");
+  lcd.print("!!Not Available!!    ");
+  delay(1000);
+  while (0)
+  {
+    if (set_mode == 0)
+      set_mode = 5;
+    else if (set_mode == 5)
+      set_mode = 1;
+    lcd.setCursor(0, 0);
+    lcd.print("  Setting Mode   ");
+    lcd.setCursor(0, 1);
+    switch (set_mode) {
+      case 1 : lcd.print("1.Set Wkdy UP tm"); break;
+      case 2 : lcd.print("2.Set Wkdy DN tm"); break;
+      case 3 : lcd.print("3.Set Wknd UP tm"); break;
+      case 4 : lcd.print("4.Set Wknd DN tm"); break;
+    }
+    if (irrecv.decode(&results))
+    {
+      irrecv.resume();
+      switch (results.value) {
+        case IR_set : return;
+        case IR_next : set_mode ++ ; break;
+        case IR_prev : set_mode -- ; break;
+        case IR_ok : set_time(set_mode) ; break;
+      }
+    }
+  }
+}
+
+// 블라인드 상승/하강 시각 수동설정
+void set_time(int num) {
+  int hr, min, set_mode;
+  lcd.setCursor(0, 0);
+
+  switch (num) {
+    case 1 : lcd.print("1.Set Wkdy UP tm"); break;
+    case 2 : lcd.print("2.Set Wkdy DN tm"); break;
+    case 3 : lcd.print("3.Set Wknd UP tm"); break;
+    case 4 : lcd.print("4.Set Wknd DN tm"); break;
+  }
+
+  switch (num) {
+    case 1 : {
+        set_mode = 0;
+        hr = 6;
+        min = 30;
+        while (1)
+        {
+          irrecv.decode(&results);
+          
+          if (set_mode == 2)
+          {
+            custom[0][1][0] = hr;
+            custom[0][0][1] = min;
+            lcd.clear();
+            lcd.setCursor(0, 0);
+            lcd.print("   Modified!      ");
+            delay(1000);
+            break;
+          }
+          switch (results.value) {
+            case IR_ok : set_mode++; break;
+            case IR_prev : {
+                switch (set_mode) {
+                  case 0 : {
+                      if (hr >= 0 && hr <= 24)
+                        hr--;
+                    }
+                  case 1 :
+                    {
+                      if (min >= 0 && min <= 60)
+                        min--;
+                    }
+                }
+              }; break;
+            case IR_next : {
+                switch (set_mode) {
+                  case 0 : {
+                      if (hr >= 0 && hr <= 24)
+                        hr++;
+                    }
+                  case 1 :
+                    {
+                      if (min >= 0 && min <= 60)
+                        min++;
+                    }
+                }
+              }; break;
+          }
+          lcd.setCursor(0,1);
+          lcd.print("Hr : ");
+          lcd.print(hr);
+          lcd.print(" ");
+          lcd.print("Min : ");
+          lcd.print(min);
+          lcd.print("     ");
+          irrecv.resume();     
+        }
+      }
+  }
+}
+
+
+
+void setup() {
+  Serial.begin(9600);
+  lcd.init();
+  lcd.backlight();
+  irrecv.enableIRIn();
+  pinMode(cds, INPUT);
+  pinMode(buzzer, OUTPUT);
+  pinMode(btn, INPUT_PULLUP);
+
+}
+
+void loop() {
+
+  Time t = rtc.getTime(); // 시간 추출
+  digitalWrite(buzzer, HIGH); // 부저 초기화
+
+  // 조이스틱 뺨싸대기
+  // 모드변경 부분
+
+  if (digitalRead(2) == 0)
+  {
+    switch (mode)
+    {
+      case 0 :
+        {
+          mode++ ;
+          lcd.setCursor(0, 0);
+          lcd.print("    Auto Mode    ");
+          lcd.setCursor(0, 1);
+          lcd.print("    CdS ONLY    ");
+          break;
+        }
+
+      case 1 :
+        {
+          mode++ ;
+          lcd.setCursor(0, 0);
+          lcd.print("    Auto Mode    ");
+          lcd.setCursor(0, 1);
+          lcd.print("    RTC ONLY    ");
+          break;
+        }
+
+      case 2 :
+        {
+          mode -= 2 ;
+          lcd.setCursor(0, 0);
+          lcd.print("   Manual Mode   ");
+          lcd.setCursor(0, 1);
+          lcd.print("Controller & IR  ");
+          break;
+        }
+    }
+    delay(750);
+  }
+
+
+
+  val = map(analogRead(pot), 0, 1023, 48, -50); //조이스틱 y축 입력값을 0~1023에서 -50~48로 환산 //모터를 거꾸로 해놔서 뒤집음
+  spd = map(val, -46, 47, -15, 15); //val값을 -15~15까지로 하여 스텝모터가 구동 가능한 속도로 변환
+  percent = map(level, 0, max, 0, 100); //level을 %로 변환
+
+
+  //Manual Mode
+  if (mode == 0)
+  {
+    //정상작동범위
+    if (level <= max && level >= 0)
+    {
+      // 리모컨 이용
+      if (irrecv.decode(&results))
+      {
+        irrecv.resume(); // IR 리모컨 신호를 다시 받을수 있게 전환
+        // switch를 통해 IR 리모컨 신호별로 함수 호출
+        switch (results.value) {
+          case IR_0 : Adjust_IR(0, &level, max); break;
+          case IR_1 : Adjust_IR(10, &level, max); break;
+          case IR_2 : Adjust_IR(20, &level, max); break;
+          case IR_3 : Adjust_IR(30, &level, max); break;
+          case IR_4 : Adjust_IR(40, &level, max); break;
+          case IR_5 : Adjust_IR(50, &level, max); break;
+          case IR_6 : Adjust_IR(60, &level, max); break;
+          case IR_7 : Adjust_IR(70, &level, max); break;
+          case IR_8 : Adjust_IR(80, &level, max); break;
+          case IR_9 : Adjust_IR(90, &level, max); break;
+          case IR_10 : Adjust_IR(100, &level, max); break;
+          case IR_set : settings(); break;
+        }
+      }
+
+      // 스틱 이용
+
+      // 스틱을 위로 올릴때 (스틱 오차 고려하여 기준값을 0으로 잡지 않고 5로 하였음)
+      if (val > 5)
+      {
+        myStepper.setSpeed(spd);
+        myStepper.step(stepsPerRevolution / 180);
+        lcd.setCursor(0, 0);
+        lcd.print("Blind up        ");
+        level += stepsPerRevolution / 180;
+      }
+
+      // 스틱을 아래로 내릴때
+      else if (val < -5)
+      {
+        myStepper.setSpeed(-spd);
+        myStepper.step(-stepsPerRevolution / 180);
+        lcd.setCursor(0, 0);
+        lcd.print("Blind down          ");
+        level -= stepsPerRevolution / 180;
+      }
+
+      // 스틱을 안건드렸을때
+      else
+      {
+        lcd.setCursor(0, 0);
+        lcd.print("   S  T  O  P    ");
+      }
+
+      // 하단에 Level을 %로 표시
+      lcd.setCursor(0, 1);
+      lcd.print("Level : ");
+      lcd.print(percent);
+      lcd.print("%        ");
+
+    }
+
+    // 100%초과 or 0% 미만
+
+    else
+    {
+      //최대치보다 크면 1스텝 역회전해서 최대치 이하로 맞춤
+      if (level > max)
+      {
+        myStepper.setSpeed(14);
+        myStepper.step(-stepsPerRevolution / 180);
+        level -= 11;
+      }
+
+      //위와 정반대 알고리즘
+      else
+      {
+        myStepper.setSpeed(14);
+        myStepper.step(stepsPerRevolution / 180);
+        level += 11;
+      }
+
+      // 점멸 + 삐비빅
+      lcd.setCursor(0, 0);
+      lcd.print("   !WARNING!        ");
+      lcd.setCursor(0, 1);
+      lcd.print("!Over Capacity!    ");
+      for (int i = 0; i < 3; i++)
+      {
+        digitalWrite(buzzer, LOW);
+        delay(50);
+        digitalWrite(buzzer, HIGH);
+        delay(50);
+      }
+      delay(200);
+      lcd.clear(); // lcd 정리
+      delay(500);
+      lcd.setCursor(0, 0);
+      lcd.print("   !WARNING!        ");
+      lcd.setCursor(0, 1);
+      lcd.print("!Over Capacity!    ");
+      delay(500);
+    }
+  }
+
+  //Auto Mode(CdS)
+
+  else if (mode == 1)
+  {
+    Serial.println(analogRead(cds));
+    //어두우면 100%로 올려버리기
+    if (analogRead(cds) < 100)
+      Adjust_IR(100, &level, max);
+
+    //밝으면 0%로 내려버리기
+    else
+      Adjust_IR(0, &level, max);
+
+    lcd.setCursor(0, 0);
+    lcd.print("    Auto Mode    ");
+    lcd.setCursor(0, 1);
+    lcd.print("Level : ");
+    lcd.print(percent);
+    lcd.print("%        ");
+  }
+
+  //Auto Mode(RTC)
+  else if (mode == 2)
+  {
+    // RTC 모듈을 통한 일정시각시 자동 등화관제 (블라인드 0%로 하강)
+    if (t.hour == 20 && t.min == 43 && t.sec == 30)
+      Adjust_IR(0, &level, max);
+
+    // RTC 모듈을 통한 일정시각시 자동 블라인드 100%로 상승
+    else if (t.hour == 20 && t.min == 43 && t.sec == 00)
+      Adjust_IR(100, &level, max);
+
+    lcd.setCursor(0, 0);
+    lcd.print("    ");
+    lcd.print(t.hour);
+    lcd.print(":");
+    lcd.print(t.min);
+    lcd.print(":");
+    lcd.print(t.sec);
+    lcd.print("     ");
+    lcd.setCursor(0, 1);
+    lcd.print("Level : ");
+    lcd.print(percent);
+    lcd.print("%        ");
+  }
+}
+
+
+
+
+
