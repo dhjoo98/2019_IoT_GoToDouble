@@ -1,12 +1,12 @@
 <h1> Brain storming </h1>  
 일단 API 서버를 구축하기 위하여 생각을 정리하여 보았습니다.<br><br>
 
-![first](webview/uploads/brainstorming.jpg)  
+![first](./uploads/brainstorming.jpg)
 
 <h1> Block diagram </h1>  
 생각을 정리한 후 Block diagram을 그려서 개발 목적 및 방향을 구체화 하였습니다.<br><br>
 
-![second](webview/uploads/diagram.PNG)  
+![second](./uploads/diagram.PNG)  
 
 <h1> 개발 환경 </h1>
 <h3> Python 3.6.8 </h3>
@@ -15,7 +15,7 @@
 
 <h1> API Server 구조 </h1>
 
-![third](webview/uploads/architecture.PNG)
+![third](./uploads/architecture.PNG)
 
 <h1> Test 결과 </h1>
 Test 코드는 python을 이용하여 작성하였습니다.<br>
@@ -39,4 +39,4 @@ print("GET response data")
 print(fget.json())
 print(sget.json())
 ```
-![fourth](webview/uploads/test.PNG)
+![fourth](./uploads/test.PNG)
