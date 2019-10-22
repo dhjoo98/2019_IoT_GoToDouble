@@ -1,4 +1,5 @@
 from django.http import JsonResponse
+from django.shortcuts import render
 from rest_framework.views import APIView
 from monitor.models import Fposition,Sposition
 
@@ -47,3 +48,25 @@ class SpositionView(APIView):
             return JsonResponse({'code': '0'})
         else:
             return JsonResponse({'code': '-1'})
+
+
+def index(request):
+    if not Fposition.objects.count():
+        fangle=fdistance=ftime=0
+    else:
+        fdata = Fposition.objects.order_by('time').first()
+        fangle = fdata.angle
+        fdistance = fdata.distance
+        ftime = fdata.time
+        fdata.delete()
+
+    if not Sposition.objects.count():
+        sangle=sdistance=stime=0
+    else:
+        sdata = Sposition.objects.order_by('time').first()
+        sangle = sdata.angle
+        sdistance = sdata.distance
+        stime = sdata.time
+        sdata.delete()
+    return render(request,'monitor/index.html',{'fangle': fangle, 'fdistance': fdistance, 'ftime': ftime,
+                'sangle': sangle, 'sdistance': sdistance, 'stime': stime})
