@@ -66,4 +66,40 @@ sudo apt-get -y install xrdp  설치
 ![](https://i.imgur.com/IiNv2dE.png)
 
 
+---
 
+5. 라즈베리파이에서 블루투스 입력 받기
+
+$ sudo apt-get install bluetooth blueman bluez
+$ sudo apt-get install python-bluetooth
+$ sudo reboot
+
+(4번과정 다시)
+
+$ sudo bluetoothctl
+$ scan on
+$ agent on
+$ pair *HC06의 MAC 주소*
+$ default-agent
+$ exit
+
+connect.py 파일 실행. 
+
+*Troubleshooting)*
+bluetoothctl errors
+1. not available -> $scan on 먼저 실행
+2. not Authorized -> $agent on 먼저 실행
+
+---
+
+두 번째 아두이노를 연결할 경우
+새로운 connect_2.py를 작성하고,
+$ sudo bluetoothctl 에서
+$ trust | disconnect
+$ scan on
+$ agent on
+$ pair *두번째 HC06 주소*
+$ default-agent
+$ exit
+
+connect_2.py 실행
