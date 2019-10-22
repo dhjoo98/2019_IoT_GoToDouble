@@ -21,7 +21,9 @@ send_signal.ino 업로드
 2. HC06 MAC 주소 찾기. 
 
 윈도우의 '블루투스 장치 추가'에서 정한 이름의 장치 찾기, 오른쪽 클릭, 속성
+
 ![](https://i.imgur.com/q3WkXrP.png)
+
 고유 식별자 항목에서 Mac 주소 습득
 
 
@@ -38,6 +40,7 @@ PC의 제어판에서 네트워크 공유센터, 기존 네트워크의 속성,
 홈 네트워킹 연결 - 로컬 영역 연결 선택
 
 ![](https://i.imgur.com/KdJ4YQE.png)
+
 (잘 안되도 여러번 체크해제했다가 다시하면 연결된다.)
 
 
@@ -46,16 +49,20 @@ PC의 제어판에서 네트워크 공유센터, 기존 네트워크의 속성,
 4. 라즈베리 파이 원격 접속 (라파 전원 켤 때 마다 필요)
 
 cmd에 ipconfig 입력, 이더넷 어댑터 로컬 의 IPv4 주소. 
+
 ![](https://i.imgur.com/t0KclBO.png)
 
 
 'Advanced IP Scanner' - 별도 다운로드 필요
 IPv4주소의 맨 끝자리만 254로 바꿔 스캔
+
 ![](https://i.imgur.com/3tHXxIQ.png)
+
 라즈베리파이의 IP 주소를 구할 수 있다. 
 
 'Putty' - 별도 다운로드 필요 
 에서 원격 ssh로 접속 
+
 ![](https://i.imgur.com/8l3C04Y.png)
 
 sudo apt-get -y install xrdp  설치
@@ -89,6 +96,7 @@ connect.py 파일 실행.
 bluetoothctl errors
 1. not available -> $scan on 먼저 실행
 2. not Authorized -> $agent on 먼저 실행
+3. line busy -> ctl에서 모든 블루투스 장치 disconnect
 
 ---
 
