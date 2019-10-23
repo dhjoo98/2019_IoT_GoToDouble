@@ -1,11 +1,11 @@
-#include <Servo.h>
+#include <SoftwareServo.h>
 #include <SoftwareSerial.h>
-Servo motor;
-SoftwareSerial BTSerial(0,1); // RX : 0, TX : 1
+SoftwareServo motor;
+SoftwareSerial BTSerial(2,3); // RX : 2, TX : 3
 
 //servo motor
 int servo_value = 0 ;
-int diff = 1;
+int diff = 1;   //degree difference
 int servo = 7; // PIN 7
 
 //ultrasonic sensor
@@ -14,19 +14,18 @@ int echo = 9;  // PIN 9
 
 
 void setup() {
-  // put your setup code here, to run once:
+  //Initialize
   motor.attach(servo);
   pinMode(trig, OUTPUT);
   pinMode(echo, INPUT);
   BTSerial.begin(9600);
-  Serial.begin(9600);
   /*while(1){
-    if(BTSerial.available())
-      break;
-      
+    if(BTSerial.available()){ // wait start signal from Rasberry Pi
+      break;              
+    }
   }*/
   
-  
+  Serial.begin(9600);
 }
 
 void loop() {
@@ -34,14 +33,14 @@ void loop() {
   //digitalWrite(trig,LOW);
   //digitalWrite(echo,LOW);
   //delayMicroseconds(2);
-  
+
   servo_value += diff;
-  if(servo_value==0 || servo_value==180 ){
+  if(servo_value==0 || servo_value==180 ){    // 0~180
     diff*=-1;
   }
-  motor.write(servo_value); 
+  motor.write(servo_value);
   
-  
+  //start signal
   digitalWrite(trig,HIGH);
   delayMicroseconds(10);
   digitalWrite(trig,LOW);
@@ -49,10 +48,11 @@ void loop() {
   unsigned long duration = pulseIn(echo, HIGH);
 
   float distance = duration /29.0/2.0;
-  int bias = int(distance/20);
-  if( bias < 15){
-    delay(15-bias); 
+  int bias = int(distance/20);  //reduce delay when distance increase
+  if( bias < 20){
+    delay(20-bias);
   }
+
   BTSerial.write("[");
   Serial.write("[");
   BTSerial.println(int(distance));
@@ -61,6 +61,6 @@ void loop() {
   BTSerial.println(servo_value);
   Serial.println(servo_value);
   
-  delay(500);
-
+  
+  SoftwareServo::refresh();
 }
