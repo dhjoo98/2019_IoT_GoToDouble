@@ -1,5 +1,7 @@
-#include<Servo.h>
+#include <Servo.h>
+#include <SoftwareSerial.h>
 Servo motor;
+SoftwareSerial BTSerial(2,3); // RX : 2, TX : 3
 
 //servo motor
 int servo_value = 0 ;
@@ -16,7 +18,12 @@ void setup() {
   motor.attach(servo);
   pinMode(trig, OUTPUT);
   pinMode(echo, INPUT);
-  Serial.begin(9600);
+  //Serial.begin(9600);
+  while(!BTSerial){
+    ;
+  }
+  
+  BTSerial.begin(9600);
 }
 
 void loop() {
@@ -41,14 +48,11 @@ void loop() {
   float distance = duration /29.0/2.0;
   int bias = int(distance/20);
   if( bias < 15){
-    Serial.print(15-bias);
     delay(15-bias);
   }
   
-  Serial.print(" ");
-  Serial.print(int(distance));
-  Serial.print("*");
-  Serial.print(servo_value);
-  Serial.println(",");
-  
+  BTSerial.print(int(distance));
+  BTSerial.print(" ");
+  BTSerial.println(servo_value);
+
 }
