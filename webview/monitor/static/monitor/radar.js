@@ -1,30 +1,34 @@
-// jquery
+// global variables
+var nowAngle, nowDistance;
+var currentRadar = 1;
+var radar1_url = "http://127.0.0.1:5000/fposition";
+var radar2_url = "http://127.0.0.1:5000/sposition";
+var currentURL = radar1_url;
+
+// navigation bar: change active status
 $(document).ready(function(){
   $("#radar1").click(function(){
     $("#radar1").addClass("active");
     $("#radar2").removeClass("active");
+    currentRadar = 1;
+    currentURL = radar1_url;
+    clear();
   });
 
   $("#radar2").click(function(){
     $("#radar2").addClass("active");
     $("#radar1").removeClass("active");
+    currentRadar=2;
+    currentURL = radar2_url;
+    clear();
   });
-
 });
-
-var nowAngle, nowDistance;
-var cFont;
-var radar1_url = "http://127.0.0.1:5000/fposition";
-var radar2_url = "http://127.0.0.1:5000/sposition";
 
 // OVERRIDE: p5js function
 function setup() {
   var cnv = createCanvas(windowWidth*0.95+31, windowHeight*1.01-50);
   background("#111");
   smooth();
-
-  //nowAngle = 10;
-  //nowDistance = 15;
 }
 
 function windowResized() {
@@ -54,7 +58,7 @@ function draw() {
 /* Get data from URL */
 function getDataFromServer() {
 
-  $.ajax({ type: "GET", url: radar1_url, dataType: 'json', success: function(response){
+  $.ajax({ type: "GET", url: currentURL, dataType: 'json', success: function(response){
       if (response.code == -1) {
         return;
       }
