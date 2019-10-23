@@ -1,4 +1,3 @@
-
 // jquery
 $(document).ready(function(){
   $("#radar1").click(function(){

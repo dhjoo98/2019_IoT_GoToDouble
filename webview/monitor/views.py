@@ -13,9 +13,10 @@ class FpositionView(APIView):
         distance = position.distance
         time = position.time
         position.delete()
-
-        return JsonResponse({'code': '0', 'angle': float(angle), 'distance': float(distance), 'time': str(time)})
-
+        ret = JsonResponse({'code': '0', 'angle': float(angle), 'distance': float(distance), 'time': str(time)})
+        ret['Access-Control-Allow-Origin'] = '*'
+        return ret
+        
     def post(self, request):
         angle = request.POST.get('angle')
         distance = request.POST.get('distance')
@@ -36,8 +37,9 @@ class SpositionView(APIView):
         distance = position.distance
         time = position.time
         position.delete()
-
-        return JsonResponse({'code': '0', 'angle': float(angle), 'distance': float(distance), 'time': str(time)})
+        ret = JsonResponse({'code': '0', 'angle': float(angle), 'distance': float(distance), 'time': str(time)})
+        ret['Access-Control-Allow-Origin'] = '*'
+        return ret
 
     def post(self, request):
         angle = request.POST.get('angle')
