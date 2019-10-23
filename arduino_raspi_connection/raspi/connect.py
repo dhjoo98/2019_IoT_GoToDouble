@@ -1,3 +1,6 @@
+
+i = 0;
+
 #Must be run after arduino starts sending
 from bluetooth import *
 
@@ -12,17 +15,15 @@ while True:
 
     if msg == '[':
         continue
-    else :
-        i += 1;
-        if (i%2) ==1 :    
-            msg = msg.replace('[','') #all sorts of exceptions
-            msg = msg.replace('\r','')
-            dic = msg.split('\n')
-            try:
-                print([int(dic[0]),int(dic[1])]) #also exception-proof
-            except:
-                print('error')
-                continue
+    else :    
+        msg = msg.replace('[','') #all sorts of exceptions
+        msg = msg.replace('\r','')
+        dic = msg.split('\n')
+        try:
+            print([int(dic[0]),int(dic[1])]) #also exception-proof
+        except:
+            print('error')
+            continue
 
 print("Finished")
 client_socket.close()
