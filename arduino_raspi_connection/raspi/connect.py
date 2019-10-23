@@ -1,15 +1,6 @@
 
 i = 0;
 
-#Must be run after arduino starts sending
-from bluetooth import *
-
-client_socket=BluetoothSocket(RFCOMM)
-
-client_socket.connect(("98:D3:71:FD:7C:19",1))
-
-i = 0;
-
 while True:
     msg = client_socket.recv(255) #1024
 
