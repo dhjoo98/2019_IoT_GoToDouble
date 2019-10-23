@@ -2,7 +2,7 @@
  
 #define BT_RXD 8 //To HC06 TXD
 #define BT_TXD 7 //To HC06 RXD
-SoftwareSerial bluetooth(BT_RXD, BT_TXD); //해당 장치로 시리얼 아웃풋 출력. 
+SoftwareSerial bluetooth(BT_RXD, BT_TXD);
  
 void setup(){
   int i;
