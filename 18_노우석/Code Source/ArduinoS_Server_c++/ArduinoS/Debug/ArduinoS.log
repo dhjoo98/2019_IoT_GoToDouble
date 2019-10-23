@@ -1,3 +1,0 @@
-﻿  main.cpp
-c:\users\administrator\source\repos\arduinos\arduinos\main.cpp(28): warning C4101: 'buffer' :참조되지 않은 지역 변수입니다.
-  ArduinoS.vcxproj -> C:\Users\Administrator\source\repos\ArduinoS\Debug\ArduinoS.exe
