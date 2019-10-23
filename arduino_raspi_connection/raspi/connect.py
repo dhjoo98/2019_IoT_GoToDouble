@@ -22,7 +22,7 @@ while True:
         try:
             print([int(dic[0]),int(dic[1])]) #also exception-proof
         except:
-            print('error')
+            #print('error')
             continue
 
 print("Finished")
