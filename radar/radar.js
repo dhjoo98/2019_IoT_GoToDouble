@@ -1,11 +1,24 @@
 
+// jquery
+$(document).ready(function(){
+  $("#radar1").click(function(){
+    $("#radar1").addClass("active");
+    $("#radar2").removeClass("active");
+  });
+
+  $("#radar2").click(function(){
+    $("#radar2").addClass("active");
+    $("#radar1").removeClass("active");
+  });
+
+});
 
 var nowAngle, nowDistance;
 var cFont;
 var radar1_url = "http://127.0.0.1:5000/fposition";
 var radar2_url = "http://127.0.0.1:5000/sposition";
 
-
+// OVERRIDE: p5js function
 function setup() {
   var cnv = createCanvas(windowWidth*0.95+31, windowHeight*1.01-50);
   background("#111");
@@ -21,14 +34,17 @@ function windowResized() {
   smooth();
 }
 
+// OVERRIDE: p5js funciotn
 function draw() {
   fill(98,245,31);
   noStroke();
   fill(0,4);
   rect(0, 0, width, height-height*0.065);
+
   // get data from server
   getDataFromServer();
 
+  // draw
   fill(98,245,31);
   drawRadarDefaultShape();
   drawSweepLine();
@@ -36,10 +52,10 @@ function draw() {
   drawObject();
 }
 
+/* Get data from URL */
 function getDataFromServer() {
 
   $.ajax({ type: "GET", url: radar1_url, dataType: 'json', success: function(response){
-      //var json_obj = $.parseJSON(response);
       if (response.code == -1) {
         return;
       }
@@ -68,7 +84,6 @@ function drawRadarDefaultShape() {
 
   // drawing line
   line(-width/2, 0, width/2, 0);
-  console.log(width/2)
   line(0,0,(-width/2)*cos(radians(30)),(-width/2)*sin(radians(30)));
   line(0,0,(-width/2)*cos(radians(90)),(-width/2)*sin(radians(90)));
   line(0,0,(-width/2)*cos(radians(60)),(-width/2)*sin(radians(60)));
@@ -89,6 +104,7 @@ function drawSweepLine() {
   pop();
 }
 
+/* draws the texts on the screen */
 function drawInfoText() {
   push();
   fill(0,0,0);
@@ -146,8 +162,13 @@ function drawObject() {
   translate(width/2,height-height*0.074);
   strokeWeight(9);
   stroke(255,10,10);
+
+  // covers the distance
   pixsDistance = nowDistance*((height-height*0.1666)*0.025);
+
+  // limiting the range
   if (nowDistance < 40) {
+    // draws the object according to the angle and the distance
     line(pixsDistance*cos(radians(nowAngle)), -pixsDistance*sin(radians(nowAngle)),
         (width-width*0.505)*cos(radians(nowAngle)), -(width-width*0.505)*sin(radians(nowAngle)));
   }
