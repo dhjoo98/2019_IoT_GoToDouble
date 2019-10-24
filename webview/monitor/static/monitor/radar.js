@@ -1,9 +1,79 @@
 // global variables
-var nowAngle, nowDistance;
+var nowAngle;
+var nowDistance;
+var alertText;
 var currentRadar = 1;
 var radar1_url = "http://127.0.0.1:5000/fposition";
 var radar2_url = "http://127.0.0.1:5000/sposition";
 var currentURL = radar1_url;
+var curTime = "t"
+var preTime = curTime;
+var result = false;
+var request;
+
+// create 2d array
+function createArray(length) {
+    var arr = [];
+    for( var i = 0; i < length; i++) arr[i] = [];
+    return arr;
+}
+
+var arrDistanceWithAngleRadar1 = createArray(180);
+var arrDistanceWithAngleRadar2 = createArray(180);
+
+function pushArrayDistanceWithAngle(angle, distance, curRad) {
+  if (curTime != preTime) {
+    if (arrDistanceWithAngleRadar1[angle]===undefined) return;
+    if (arrDistanceWithAngleRadar2[angle]===undefined) return;
+    if (curRad == 1) {
+      arrDistanceWithAngleRadar1[angle].push(distance);
+    } else {
+      arrDistanceWithAngleRadar2[angle].push(distance);
+    }
+  }
+  preTime = curTime;
+}
+
+function shiftArrayLessThenThree(angle) {
+  if(angle===undefined) return;
+  if (currentRadar == 1) {
+    for( var i = arrDistanceWithAngleRadar1[angle].length; i >= 3; i--) {
+      arrDistanceWithAngleRadar1[angle].shift();
+    }
+  } else {
+    for( var i = arrDistanceWithAngleRadar2[angle].length; i >= 3; i--) {
+      arrDistanceWithAngleRadar1[angle].shift();
+    }
+  }
+}
+
+function detectInvador(angle) {
+  if(angle===undefined) return result;
+
+  if (currentRadar == 1) {
+    // not detect data less then 3
+    if (arrDistanceWithAngleRadar1[angle]===undefined) return;
+    if(arrDistanceWithAngleRadar1[angle].length < 3) {
+      return result;
+    }
+  } else {
+    // not detect data less then 3
+    if (arrDistanceWithAngleRadar2[angle]===undefined) return;
+    if(arrDistanceWithAngleRadar2[angle].length < 3) {
+      return result;
+    }
+  }
+
+  // judge that decresed distance
+  if (arrDistanceWithAngleRadar1[angle].every((val, i, arr) => val === arr[0])) {
+    result = false;
+  } else if (arrDistanceWithAngleRadar1[angle].reduce((n, item) => n !== false && item <= n && item)) {
+    result = true;
+  }
+
+  shiftArrayLessThenThree(angle);
+  return result;
+}
 
 // navigation bar: change active status
 $(document).ready(function(){
@@ -18,7 +88,7 @@ $(document).ready(function(){
   $("#radar2").click(function(){
     $("#radar2").addClass("active");
     $("#radar1").removeClass("active");
-    currentRadar=2;
+    currentRadar = 2;
     currentURL = radar2_url;
     clear();
   });
@@ -53,6 +123,7 @@ function draw() {
   drawSweepLine();
   drawInfoText();
   drawObject();
+  drawIncomingText();
 }
 
 /* Get data from URL */
@@ -64,6 +135,10 @@ function getDataFromServer() {
       }
       nowAngle = float(response.angle)
       nowDistance = float(response.distance)
+      curTime = response.time
+      currentRadar = int(response.code)
+      pushArrayDistanceWithAngle(float(response.angle), float(response.distance), currentRadar)
+
       //console.log(nowAngle)
       //console.log(response.time)
   } });
@@ -175,6 +250,27 @@ function drawObject() {
     // draws the object according to the angle and the distance
     line(pixsDistance*cos(radians(nowAngle)), -pixsDistance*sin(radians(nowAngle)),
         (width-width*0.505)*cos(radians(nowAngle)), -(width-width*0.505)*sin(radians(nowAngle)));
+  }
+  pop();
+}
+
+function drawIncomingText() {
+  push();
+  fill(0,0,0);
+  noStroke();
+  rect(0, height-height*0.0648, width/2, height);
+  fill(98,245,31);
+
+  textSize(40);
+
+  var isDetected = detectInvador(nowAngle);
+  if (isDetected) {
+    alertText = "Incomming!"
+    fill(255, 10, 10);
+    text(alertText, width-width*0.875, height-height*0.0277);
+  } else {
+    alertText = "not detected"
+    text(alertText, width-width*0.875, height-height*0.0277);
   }
   pop();
 }
