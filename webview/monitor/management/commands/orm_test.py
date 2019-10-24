@@ -11,8 +11,13 @@ class Command(BaseCommand):
             position = Sposition.objects.create(angle=angle,distance=distance)
             position.save()
 
+        def delete():
+            Fposition.objects.all().delete()
+            Sposition.objects.all().delete()
+
         for i in range(100):
             f_save(float(i),float(i))
             s_save(float(i),float(i))
             print(Fposition.objects.count(), Sposition.objects.count())
             print(Fposition.objects.last(), Sposition.objects.last())
+        delete()
