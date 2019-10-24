@@ -3,8 +3,8 @@ var nowAngle;
 var nowDistance;
 var alertText;
 var currentRadar = 1;
-var radar1_url = "http://127.0.0.1:5000/fposition";
-var radar2_url = "http://127.0.0.1:5000/sposition";
+var radar1_url = "http://192.168.137.119:5000/fposition";
+var radar2_url = "http://192.168.137.119:5000/sposition";
 var currentURL = radar1_url;
 var curTime = "t"
 var preTime = curTime;

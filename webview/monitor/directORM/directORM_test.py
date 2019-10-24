@@ -22,9 +22,6 @@ def delete():
     Fposition.objects.all().delete()
     Sposition.objects.all().delete()
 #test
-for i in range(100):
-    f_save(float(i),float(i))
-    s_save(float(i),float(i))
-    print(Fposition.objects.count(), Sposition.objects.count())
-    print(Fposition.objects.last(), Sposition.objects.last())
+for i in Fposition.objects.all():
+    print(i.angle,i.distance)
 delete()
