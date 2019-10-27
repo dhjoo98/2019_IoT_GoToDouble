@@ -12,6 +12,10 @@ int servo = 7; // PIN 7
 int trig = 8;  // PIN 8
 int echo = 9;  // PIN 9
 
+//fixed length
+int spare = 0;
+int i = 0, j = 0, mod = 0;
+char fixed[11] = "[0000 000]";
 
 void setup() {
   //Initialize
@@ -19,11 +23,11 @@ void setup() {
   pinMode(trig, OUTPUT);
   pinMode(echo, INPUT);
   BTSerial.begin(9600);
-  while(1){
+  /*while(1){
     if(BTSerial.available()){ // wait start signal from Rasberry Pi
       break;              
     }
-  }
+  }*/
   
   Serial.begin(9600);
 }
@@ -52,11 +56,18 @@ void loop() {
   if( bias < 20){
     delay(20-bias);
   }
-
-  //send sensor data via bluetooth
+  BTSerial.write("!");
+  //Serial.write("!");
   BTSerial.print(int(distance));
-  BTSerial.println(servo_value);
+  BTSerial.write(" ");
   //Serial.print(int(distance));
-  //Serial.print(" ");
-  //Serial.println(servo_value);
+  //Serial.write(" ");
+  BTSerial.print(servo_value);
+  //Serial.print(servo_value);
+  BTSerial.write("#");
+  //Serial.write("#");
+  BTSerial.println();
+  //Serial.println();
+  
+  SoftwareServo::refresh();
 }

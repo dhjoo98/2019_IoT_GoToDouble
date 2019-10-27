@@ -15,7 +15,6 @@ print(msg)
 while True:
     msg = client_socket.recv(255) #1024
     #print(msg)
-    
     if msg == '[':
         continue
     else :  
@@ -26,6 +25,6 @@ while True:
             print(float(dic[0]),float(dic[1])) #also exception-proof
         except:
             continue
-    
+
 print("Finished")
 client_socket.close()
